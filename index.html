@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Formulário de Credenciamento de Clientes</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body ng-app="myApp" ng-controller="clientesCtrl">
+
+    <div class="container" ng-show="mostrarClientes">
+        <div class="row">
+            <div class="col-md-8 col-md-offset-2">
+                <h2 class="text-center">Clientes Cadastrados</h2>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Código</th>
+                            <th>Nome/Razão Social</th>
+                            <th>Endereço</th>
+                            <th>Email</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr ng-repeat="cliente in clientes" ng-click="abrirDetalhesCliente(cliente)">
+                            <td>{{cliente.codigo}}</td>
+                            <td>{{cliente.nomeRazaoSocial}}</td>
+                            <td>{{cliente.endereco}}</td>
+                            <td>{{cliente.email}}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4 col-md-offset-4 text-center">
+                <button class="btn btn-primary btn-lg btn-block" ng-click="abrirCadastro()">Cadastrar Cliente</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="container formulario" ng-show="mostrarFormulario">
+        <h2 class="text-center">Formulário de Credenciamento de Clientes</h2>
+        <form name="cadastroForm" novalidate>
+            <div class="form-group">
+                <label>Tipo de Cliente:</label>
+                <select class="form-control" ng-model="novoCliente.tipo">
+                    <option value="Física">Física</option>
+                    <option value="Jurídica">Jurídica</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Documento (CPF ou CNPJ):</label>
+                <input type="text" class="form-control" ng-model="novoCliente.documento" ng-pattern="/^\d+$/"
+                    required>
+                <div ng-show="cadastroForm.documento.$invalid && !cadastroForm.documento.$pristine"
+                    class="help-block">O campo "Documento" é obrigatório e deve conter apenas números.</div>
+            </div>
+            <div class="form-group">
+                <label>Nome/Razão Social:</label>
+                <input type="text" class="form-control" ng-model="novoCliente.nomeRazaoSocial" required>
+                <div ng-show="cadastroForm.nomeRazaoSocial.$invalid && !cadastroForm.nomeRazaoSocial.$pristine"
+                    class="help-block">O campo "Nome/Razão Social" é obrigatório.</div>
+            </div>
+            <div class="form-group" ng-show="novoCliente.tipo === 'Jurídica'">
+                <label>Nome Fantasia:</label>
+                <input type="text" class="form-control" ng-model="novoCliente.nomeFantasia">
+            </div>
+            <div class="form-group">
+                <label>CEP:</label>
+                <input type="text" class="form-control" ng-model="novoCliente.cep" ng-blur="buscarEndereco()"
+                    ng-pattern="/^\d+$/" required>
+                <div ng-show="cadastroForm.cep.$invalid && !cadastroForm.cep.$pristine" class="help-block">O campo
+                    "CEP" é obrigatório e deve conter apenas números.</div>
+            </div>
+            <div class="form-group">
+                <label>Endereço:</label>
+                <input type="text" class="form-control" ng-model="novoCliente.endereco" required>
+                <div ng-show="cadastroForm.endereco.$invalid && !cadastroForm.endereco.$pristine"
+                    class="help-block">O campo "Endereço" é obrigatório.</div>
+            </div>
+            <div class="form-group">
+                <label>Bairro:</label>
+                <input type="text" class="form-control" ng-model="novoCliente.bairro" required>
+                <div ng-show="cadastroForm.bairro.$invalid && !cadastroForm.bairro.$pristine" class="help-block">O campo
+                    "Bairro" é obrigatório.</div>
+            </div>
+            <div class="form-group">
+                <label>Cidade:</label>
+                <input type="text" class="form-control" ng-model="novoCliente.cidade" required>
+                <div ng-show="cadastroForm.cidade.$invalid && !cadastroForm.cidade.$pristine" class="help-block">O campo
+                    "Cidade" é obrigatório.</div>
+            </div>
+            <div class="form-group">
+                <label>Telefone:</label>
+                <input type="tel" class="form-control" ng-model="novoCliente.telefone" ng-pattern="/^\d+$/" required>
+                <div ng-show="cadastroForm.telefone.$invalid && !cadastroForm.telefone.$pristine"
+                    class="help-block">O campo "Telefone" é obrigatório e deve conter apenas números.</div>
+            </div>
+            <div class="form-group">
+                <label>Email:</label>
+                <input type="email" class="form-control" ng-model="novoCliente.email" required>
+                <div ng-show="cadastroForm.email.$invalid && !cadastroForm.email.$pristine"
+                    class="help-block">O campo "Email" é obrigatório.</div>
+            </div>
+            <button class="btn btn-primary btn-lg btn-block" ng-click="cadastrarCliente()"
+                ng-disabled="cadastroForm.$invalid">Cadastrar</button>
+            <button class="btn btn-default btn-lg btn-block" ng-click="cancelarCadastro()">Cancelar</button>
+        </form>
+    </div>
+
+    <!-- Modal de Detalhes do Cliente -->
+    <div class="modal fade" id="modalDetalhesCliente" tabindex="-1" role="dialog" aria-labelledby="modalTitle"
+        aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                            aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="modalTitle">Detalhes do Cliente</h4>
+                </div>
+                <div class="modal-body">
+                    <ul class="list-group">
+                        <li class="list-group-item"><strong>Código: </strong>{{clienteDetalhes.codigo}}</li>
+                        <li class="list-group-item"><strong>Tipo: </strong>{{clienteDetalhes.tipo}}</li>
+                        <li class="list-group-item"><strong>Documento: </strong>{{clienteDetalhes.documento}}</li>
+                        <li class="list-group-item"><strong>Nome/Razão Social: </strong>{{clienteDetalhes.nomeRazaoSocial}}</li>
+                        <li class="list-group-item" ng-show="clienteDetalhes.tipo === 'Jurídica'"><strong>Nome Fantasia: </strong>{{clienteDetalhes.nomeFantasia}}</li>
+                        <li class="list-group-item"><strong>CEP: </strong>{{clienteDetalhes.cep}}</li>
+                        <li class="list-group-item"><strong>Endereço: </strong>{{clienteDetalhes.endereco}}</li>
+                        <li class="list-group-item"><strong>Bairro: </strong>{{clienteDetalhes.bairro}}</li>
+                        <li class="list-group-item"><strong>Cidade: </strong>{{clienteDetalhes.cidade}}</li>
+                        <li class="list-group-item"><strong>Telefone: </strong>{{clienteDetalhes.telefone}}</li>
+                        <li class="list-group-item"><strong>Email: </strong>{{clienteDetalhes.email}}</li>
+                    </ul>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Fechar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.7.9/angular.min.js"></script>
+    <script src="script.js"></script>
+</body>
+
+</html>
