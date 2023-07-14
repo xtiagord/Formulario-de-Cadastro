@@ -45,7 +45,8 @@
 
         .row{
             align-items: center;
-            width: 380px;
+            width: 280px;
+            font-size: 8px;
         }
     }
 
